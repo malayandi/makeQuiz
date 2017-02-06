@@ -1,6 +1,9 @@
 import random
 
-def selector(num, questions, dReq, tReq):
+# TODO: prone to getting stuck in loops; set conditions on inputs and optimise algorithm
+# IDEA: use matrix to store data and just pick from there
+
+def selector(questions, dReq, tReq):
     """
     Given a histogram of questions that keep track of their difficulty and
     corresponding topic, select num questions that satisfy the requirements
@@ -8,18 +11,24 @@ def selector(num, questions, dReq, tReq):
     """
     chosen = []
     t_hist, d_hist = track(questions)
-    while sum(dReq.values) != 0:
+    to_choose = sum(dReq.values())
+    while to_choose:
         diffs = list(dReq.keys()) # list of keys
         diffs = [num for num in diffs if num] # list of keys with non-zero value
-
+        valid = False
         chosen_d = random.choice(diffs) # randomly chosen difficulty
         diff_list = d_hist[chosen_d] # list of questions with chosen difficulty
-        chosen_q = random.choice(diff_list) # chosen question
         dReq[chosen_d] -= 1 # removing one from required questions of difficulty
-
-        params = questions[chosen_q]
-        chosen_t = params[0]
-        tReq[chosen_t] -= 1 # removing one from required questions of topic
+        while valid == False:
+            chosen_q = random.choice(diff_list) # chosen question
+            params = questions[chosen_q]
+            chosen_t = params[0]
+            if tReq[chosen_t]:
+                valid = True
+                tReq[chosen_t] -= 1 # removing one from required questions of topic
+                to_choose -= 1
+        chosen.append(chosen_q)
+    return chosen
 
 def track(questions):
     """
@@ -48,7 +57,7 @@ if __name__ == "__main__":
         "medium2": (2, "medium"), "medium2_2": (2, "medium"), "medium1": (1, "medium"),
         "hard3": (3, "hard"), "hard3_2": (3, "hard"), "hard1": (1, "hard"), "hard2": (2, "hard")}
     topics, diff = track(questions)
-    dReq = {"easy": 1, "medium": 2, "hard": 1}
-    tReq = {1: 2, 2: 1, 3: 1}
-    print(topics)
-    print(diff)
+    dReq = {"easy": 1, "medium": 2, "hard": 2}
+    tReq = {1: 1, 2: 2, 3: 2}
+    chosen = selector(questions, dReq, tReq)
+    print(chosen)
